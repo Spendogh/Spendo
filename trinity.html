@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Bundle Admin Dashboard</title>
+    
+    <style>
+        /* --- CSS STYLES --- */
+        :root {
+            --sidebar-width: 250px;
+            --sidebar-collapsed-width: 70px;
+            --main-bg: #f4f7fa;
+            --sidebar-bg: #1e293b;
+            --sidebar-hover: #334155;
+            --primary-color: #3b82f6;
+            --primary-dark: #2563eb;
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --card-bg: white;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --transition-speed: 0.3s;
+            
+            /* Network Colors */
+            --mtn-color: #ffcc00;
+            --telecel-color: #e60000;
+            --at-color: #0033cc;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--main-bg);
+            display: flex;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* --- LOGIN PORTAL STYLES --- */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f8fafc; /* Light grey background */
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-logo {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .login-title {
+            font-size: 1.5rem;
+            color: #1e293b;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .login-subtitle {
+            color: #64748b;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+
+        .login-input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .login-input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .login-btn-submit {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+
+        .login-btn-submit:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .login-error {
+            color: #ef4444;
+            background-color: #fef2f2;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            margin-top: 15px;
+            display: none;
+            border: 1px solid #fee2e2;
+        }
+
+        /* 1. Sidebar Styling */
+        #sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--sidebar-bg);
+            color: var(--text-color);
+            flex-shrink: 0;
+            transition: width var(--transition-speed) ease;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        
+        #sidebar h2 {
+            text-align: center;
+            margin: 0;
+            padding: 20px 0;
+            color: white;
+            font-size: 1.25rem;
+            border-bottom: 1px solid var(--sidebar-hover);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            height: 60px;
+            box-sizing: border-box;
+        }
+
+        #sidebar h2 i {
+            color: var(--primary-color);
+        }
+
+        #sidebar .nav-links {
+            padding-top: 20px;
+            flex-grow: 1;
+        }
+
+        #sidebar a {
+            padding: 15px 25px;
+            text-decoration: none;
+            font-size: 15px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        #sidebar a i {
+            width: 24px;
+            text-align: center;
+            margin-right: 15px;
+            font-size: 1.1rem;
+        }
+
+        #sidebar a:hover, #sidebar .active {
+            background-color: var(--sidebar-hover);
+            color: white;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        /* 2. Main Content Area */
+        #main-content {
+            flex-grow: 1;
+            padding: 20px 30px;
+            transition: margin-left var(--transition-speed);
+            overflow-y: auto;
+            max-height: 100vh;
+        }
+
+        /* 3. Header Styling */
+        #header {
+            background-color: var(--card-bg);
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #toggle-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #475569;
+            padding: 5px;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+
+        #toggle-btn:hover {
+            background-color: #e2e8f0;
+        }
+
+        #header h1 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* 4. Dashboard Views */
+        .view-section {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        .view-section.active-view {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 5. Card/Widget Styling (Key Metrics) */
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        .card.blue .card-icon { background-color: #e0f2fe; color: #0284c7; }
+        .card.green .card-icon { background-color: #dcfce7; color: #16a34a; }
+        .card.purple .card-icon { background-color: #f3e8ff; color: #9333ea; }
+        .card.orange .card-icon { background-color: #ffedd5; color: #ea580c; }
+
+        .card .value {
+            font-size: 1.75em;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+
+        .card .label {
+            font-size: 0.9em;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        /* 6. Chart Area */
+        .chart-card {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .chart-header h3 {
+            margin: 0;
+            color: #1e293b;
+        }
+
+        .simple-bar-chart {
+            height: 250px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding-top: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .bar-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 10%;
+            height: 100%;
+            justify-content: flex-end;
+            gap: 10px;
+            group: 1;
+        }
+
+        .bar {
+            width: 100%;
+            background-color: var(--primary-color);
+            border-radius: 4px 4px 0 0;
+            transition: height 1s ease-out;
+            opacity: 0.8;
+            height: 0; 
+            position: relative;
+        }
+        
+        .bar:hover {
+            opacity: 1;
+            cursor: pointer;
+        }
+
+        .bar::after {
+            content: attr(data-value);
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .bar:hover::after {
+            opacity: 1;
+        }
+
+        .bar-label {
+            font-size: 12px;
+            color: #64748b;
+            text-align: center;
+        }
+
+        /* 7. Data Plans Table Styling */
+        .plans-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .plan-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .plan-header {
+            padding: 20px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .plan-header.mtn { background-color: var(--mtn-color); color: #000; }
+        .plan-header.telecel { background-color: var(--telecel-color); }
+        .plan-header.at { background-color: var(--at-color); }
+
+        .plan-header h3 { margin: 0; font-size: 1.2rem; }
+        .plan-header i { font-size: 1.5rem; opacity: 0.8; }
+
+        .plan-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .plan-table th, .plan-table td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .plan-table th {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .plan-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .plan-table tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .price-tag {
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        /* 8. Registration Form Styles */
+        .reg-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .fee-card {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .fee-card.dealer-bg {
+             background: linear-gradient(135deg, #0f172a, #1e293b);
+        }
+        
+        .fee-card.afa-bg {
+             background: linear-gradient(135deg, #059669, #047857);
+        }
+
+        .fee-card h2 { margin: 0; font-size: 2rem; color: var(--primary-color); }
+        .fee-card.afa-bg h2 { color: #86efac; }
+        .fee-card p { margin: 5px 0 0; opacity: 0.9; }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group.full-width { grid-column: span 2; }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #475569;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box; /* Fix for padding issue */
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .payment-methods {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .pay-option {
+            flex: 1;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .pay-option:hover { background-color: #f8fafc; border-color: #94a3b8; }
+        .pay-option.selected { border-color: var(--primary-color); background-color: #eff6ff; color: var(--primary-color); font-weight: bold; }
+
+        .btn-register {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-register:hover { background-color: var(--primary-dark); }
+
+        /* 9. Referral & Pricing Styles */
+        .referral-box {
+            background-color: #e0f2fe;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .link-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        .link-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            background-color: white;
+            color: #475569;
+            font-family: monospace;
+        }
+
+        .btn-copy {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .network-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .network-header {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .network-header.mtn { border-left: 5px solid var(--mtn-color); }
+        .network-header.telecel { border-left: 5px solid var(--telecel-color); }
+        .network-header.at { border-left: 5px solid var(--at-color); }
+
+        .pricing-table-input {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .pricing-table-input th {
+            background-color: #f8fafc;
+            text-align: left;
+            padding: 12px 20px;
+            font-size: 14px;
+            color: #64748b;
+        }
+        
+        .pricing-table-input td {
+            padding: 12px 20px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .price-input-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .price-input-group input {
+            width: 80px;
+            padding: 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .profit-badge {
+            background-color: #dcfce7;
+            color: #16a34a;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        /* Responsive Sidebar Collapse */
+        .collapsed-sidebar #sidebar {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .collapsed-sidebar #sidebar h2 span, 
+        .collapsed-sidebar #sidebar a span {
+            display: none;
+        }
+        
+        .collapsed-sidebar #sidebar h2 {
+            justify-content: center;
+        }
+
+        .collapsed-sidebar #sidebar h2 i {
+            font-size: 1.5rem;
+        }
+
+        .collapsed-sidebar #sidebar a {
+            justify-content: center;
+            padding: 15px 0;
+        }
+
+        .collapsed-sidebar #sidebar a i {
+            margin-right: 0;
+            font-size: 1.25rem;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .form-group.full-width { grid-column: span 1; }
+            
+            #sidebar {
+                position: fixed;
+                height: 100%;
+                z-index: 100;
+                left: 0;
+                width: var(--sidebar-width);
+                transform: translateX(0);
+            }
+
+            body.mobile-hidden #sidebar {
+                transform: translateX(-100%);
+            }
+            
+            body.mobile-hidden #main-content {
+                margin-left: 0;
+            }
+
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0; left: 0; width: 100%; height: 100%; 
+                background: rgba(0,0,0,0.5);
+                z-index: 99;
+            }
+
+            body:not(.mobile-hidden) .sidebar-overlay {
+                display: block;
+            }
+            
+            .link-wrapper { flex-direction: column; }
+            .btn-copy { padding: 10px; }
+        }
+    </style>
+    <!-- Using Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="collapsed-sidebar-off">
+
+    <!-- LOGIN PORTAL -->
+    <div id="login-overlay">
+        <div class="login-card">
+            <div class="login-logo"><i class="fas fa-layer-group"></i></div>
+            <div class="login-title">Admin Portal</div>
+            <div class="login-subtitle">Sign in to manage data bundles</div>
+            
+            <form id="login-form">
+                <div class="login-input-group">
+                    <label>Username</label>
+                    <input type="text" id="username" class="login-input" placeholder="Enter username" required>
+                </div>
+                <div class="login-input-group">
+                    <label>Password</label>
+                    <input type="password" id="password" class="login-input" placeholder="Enter password" required>
+                </div>
+                <button type="submit" class="login-btn-submit">Secure Login</button>
+            </form>
+            <div id="login-error" class="login-error"><i class="fas fa-exclamation-circle"></i> Invalid Username or Password</div>
+        </div>
+    </div>
+
+    <!-- MAIN APP WRAPPER (Hidden Initially) -->
+    <div id="sidebar" style="display:none;">
+        <h2><i class="fas fa-layer-group"></i> <span>DataAdmin</span></h2>
+        <div class="nav-links">
+            <a href="#" class="nav-item active" data-target="dashboard"><i class="fas fa-home"></i> <span>Dashboard</span></a>
+            <a href="#" class="nav-item" data-target="data-plans"><i class="fas fa-database"></i> <span>Data Plans</span></a>
+            <!-- NEW REFERRAL LINK -->
+            <a href="#" class="nav-item" data-target="referral-settings"><i class="fas fa-share-alt"></i> <span>Referral Settings</span></a>
+            <!-- AGENT PORTAL LINK -->
+            <a href="#" class="nav-item" data-target="agent-registration"><i class="fas fa-user-tie"></i> <span>Agent Portal</span></a>
+            <!-- DEALER PORTAL LINK -->
+            <a href="#" class="nav-item" data-target="dealer-registration"><i class="fas fa-briefcase"></i> <span>Dealer Portal</span></a>
+            <!-- AFA REGISTRATION LINK -->
+            <a href="#" class="nav-item" data-target="afa-registration"><i class="fas fa-id-card"></i> <span>AFA Registration</span></a>
+            
+            <a href="#" class="nav-item"><i class="fas fa-shopping-cart"></i> <span>Sales Log</span></a>
+            <a href="#" class="nav-item"><i class="fas fa-users"></i> <span>Customers</span></a>
+            <a href="#" class="nav-item"><i class="fas fa-chart-line"></i> <span>Reports</span></a>
+            <a href="#" class="nav-item"><i class="fas fa-cog"></i> <span>Settings</span></a>
+        </div>
+    </div>
+
+    <!-- Overlay for mobile sidebar -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <div id="main-content" style="display:none;">
+        
+        <div id="header">
+            <div id="header-left">
+                <button id="toggle-btn" title="Toggle Sidebar"><i class="fas fa-bars"></i></button>
+                <h1 id="page-title">Dashboard Overview</h1>
+            </div>
+            <div class="user-profile">
+                <span>Admin User</span>
+                <div class="user-avatar">AD</div>
+            </div>
+        </div>
+
+        <!-- VIEW: DASHBOARD -->
+        <div id="dashboard-view" class="view-section active-view">
+            <div class="card-container">
+                <div class="card blue">
+                    <div class="card-icon"><i class="fas fa-sim-card"></i></div>
+                    <div class="value">9,875</div>
+                    <div class="label">Total Bundles Sold</div>
+                </div>
+                <div class="card green">
+                    <div class="card-icon"><i class="fas fa-dollar-sign"></i></div>
+                    <div class="value">GH₵ 1,234.50</div>
+                    <div class="label">Today's Revenue</div>
+                </div>
+                <div class="card purple">
+                    <div class="card-icon"><i class="fas fa-wifi"></i></div>
+                    <div class="value">150 GB</div>
+                    <div class="label">Data Transferred (24h)</div>
+                </div>
+                <div class="card orange">
+                    <div class="card-icon"><i class="fas fa-user-plus"></i></div>
+                    <div class="value">45</div>
+                    <div class="label">New Customers</div>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Recent Sales Volume (Last 7 Days)</h3>
+                    <button style="border:none; background:none; color:#64748b; cursor:pointer;"><i class="fas fa-ellipsis-h"></i></button>
+                </div>
+                <div class="simple-bar-chart">
+                    <!-- Bars populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: DATA PLANS -->
+        <div id="data-plans-view" class="view-section">
+            <div class="plans-container">
+                <!-- MTN PLAN -->
+                <div class="plan-card">
+                    <div class="plan-header mtn">
+                        <h3>MTN Ghana</h3>
+                        <i class="fas fa-signal"></i>
+                    </div>
+                    <table class="plan-table">
+                        <thead>
+                            <tr>
+                                <th>Bundle Volume</th>
+                                <th>Price (GHS)</th>
+                                <th>Validity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1 GB</td>
+                                <td class="price-tag">10.00</td>
+                                <td>Non-Expiry</td>
+                            </tr>
+                            <tr>
+                                <td>4.3 GB</td>
+                                <td class="price-tag">43.00</td>
+                                <td>Month</td>
+                            </tr>
+                             <tr>
+                                <td>10 GB</td>
+                                <td class="price-tag">87.00</td>
+                                <td>Month</td>
+                            </tr>
+                            <tr>
+                                <td>25 GB</td>
+                                <td class="price-tag">100.00</td>
+                                <td>Non-Expiry</td>
+                            </tr>
+                            <tr>
+                                <td>68 GB</td>
+                                <td class="price-tag">200.00</td>
+                                <td>Non-Expiry</td>
+                            </tr>
+                            <tr>
+                                <td>92 GB</td>
+                                <td class="price-tag">300.00</td>
+                                <td>Month</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- TELECEL PLAN -->
+                <div class="plan-card">
+                    <div class="plan-header telecel">
+                        <h3>Telecel (Vodafone)</h3>
+                        <i class="fas fa-satellite-dish"></i>
+                    </div>
+                    <table class="plan-table">
+                        <thead>
+                            <tr>
+                                <th>Bundle Volume</th>
+                                <th>Price (GHS)</th>
+                                <th>Validity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1.5 GB</td>
+                                <td class="price-tag">15.00</td>
+                                <td>Non-Expiry</td>
+                            </tr>
+                            <tr>
+                                <td>2.5 GB</td>
+                                <td class="price-tag">20.00</td>
+                                <td>5 Days</td>
+                            </tr>
+                            <tr>
+                                <td>18.8 GB</td>
+                                <td class="price-tag">100.00</td>
+                                <td>Non-Expiry</td>
+                            </tr>
+                            <tr>
+                                <td>45.4 GB</td>
+                                <td class="price-tag">200.00</td>
+                                <td>Non-Expiry</td>
+                            </tr>
+                            <tr>
+                                <td>169 GB</td>
+                                <td class="price-tag">300.00</td>
+                                <td>Non-Expiry</td>
+                            </tr>
+                             <tr>
+                                <td>210 GB (Broadband)</td>
+                                <td class="price-tag">330.00</td>
+                                <td>30 Days</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- AT PLAN -->
+                <div class="plan-card">
+                    <div class="plan-header at">
+                        <h3>AT (AirtelTigo)</h3>
+                        <i class="fas fa-broadcast-tower"></i>
+                    </div>
+                    <table class="plan-table">
+                        <thead>
+                            <tr>
+                                <th>Bundle Volume</th>
+                                <th>Price (GHS)</th>
+                                <th>Validity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1 GB</td>
+                                <td class="price-tag">10.00</td>
+                                <td>No Expiry</td>
+                            </tr>
+                            <tr>
+                                <td>2 GB</td>
+                                <td class="price-tag">20.00</td>
+                                <td>No Expiry</td>
+                            </tr>
+                            <tr>
+                                <td>4.5 GB</td>
+                                <td class="price-tag">50.00</td>
+                                <td>No Expiry</td>
+                            </tr>
+                            <tr>
+                                <td>10 GB</td>
+                                <td class="price-tag">100.00</td>
+                                <td>No Expiry</td>
+                            </tr>
+                            <tr>
+                                <td>30 GB</td>
+                                <td class="price-tag">200.00</td>
+                                <td>No Expiry</td>
+                            </tr>
+                            <tr>
+                                <td>90 GB</td>
+                                <td class="price-tag">300.00</td>
+                                <td>No Expiry</td>
+                            </tr>
+                             <tr>
+                                <td>105 GB</td>
+                                <td class="price-tag">350.00</td>
+                                <td>No Expiry</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- VIEW: REFERRAL SETTINGS -->
+        <div id="referral-settings-view" class="view-section">
+            
+            <div class="referral-box">
+                <div style="font-weight:600; color:#0369a1;">Your Customer Referral Link</div>
+                <div style="font-size:13px; color:#64748b;">Share this link with your customers. They will see the prices you set below.</div>
+                <div class="link-wrapper">
+                    <input type="text" class="link-input" value="https://databundle.com/ref/agent-88329" readonly id="referral-link">
+                    <button class="btn-copy" onclick="copyLink()">Copy Link</button>
+                </div>
+            </div>
+            
+            <h3 style="margin-bottom:20px; color:#334155;">Configure Selling Prices</h3>
+            <p style="margin-bottom:20px; color:#64748b; font-size:14px;">Set the price you want to sell at. Your profit is calculated automatically.</p>
+
+            <!-- MTN CONFIG -->
+            <div class="network-section">
+                <div class="network-header mtn">
+                    <i class="fas fa-signal" style="color: #ca8a04;"></i>
+                    <h4 style="margin:0;">MTN Ghana Settings</h4>
+                </div>
+                <table class="pricing-table-input">
+                    <thead>
+                        <tr>
+                            <th>Bundle</th>
+                            <th>Base Price</th>
+                            <th>Your Selling Price (GHS)</th>
+                            <th>Est. Profit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1 GB (Non-Expiry)</td>
+                            <td>10.00</td>
+                            <td>
+                                <div class="price-input-group">
+                                    <span>GHS</span>
+                                    <input type="number" value="12.00" min="10.00" step="0.50" onchange="calculateProfit(this, 10)">
+                                </div>
+                            </td>
+                            <td><span class="profit-badge">+2.00</span></td>
+                        </tr>
+                        <tr>
+                            <td>10 GB (Month)</td>
+                            <td>87.00</td>
+                            <td>
+                                <div class="price-input-group">
+                                    <span>GHS</span>
+                                    <input type="number" value="95.00" min="87.00" step="1.00" onchange="calculateProfit(this, 87)">
+                                </div>
+                            </td>
+                            <td><span class="profit-badge">+8.00</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- TELECEL CONFIG -->
+            <div class="network-section">
+                <div class="network-header telecel">
+                    <i class="fas fa-satellite-dish" style="color: #dc2626;"></i>
+                    <h4 style="margin:0;">Telecel Settings</h4>
+                </div>
+                <table class="pricing-table-input">
+                    <thead>
+                        <tr>
+                            <th>Bundle</th>
+                            <th>Base Price</th>
+                            <th>Your Selling Price (GHS)</th>
+                            <th>Est. Profit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1.5 GB (Non-Expiry)</td>
+                            <td>15.00</td>
+                            <td>
+                                <div class="price-input-group">
+                                    <span>GHS</span>
+                                    <input type="number" value="17.00" min="15.00" step="0.50" onchange="calculateProfit(this, 15)">
+                                </div>
+                            </td>
+                            <td><span class="profit-badge">+2.00</span></td>
+                        </tr>
+                        <tr>
+                            <td>18.8 GB (Non-Expiry)</td>
+                            <td>100.00</td>
+                            <td>
+                                <div class="price-input-group">
+                                    <span>GHS</span>
+                                    <input type="number" value="110.00" min="100.00" step="1.00" onchange="calculateProfit(this, 100)">
+                                </div>
+                            </td>
+                            <td><span class="profit-badge">+10.00</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- AT CONFIG -->
+            <div class="network-section">
+                <div class="network-header at">
+                    <i class="fas fa-broadcast-tower" style="color: #2563eb;"></i>
+                    <h4 style="margin:0;">AT (AirtelTigo) Settings</h4>
+                </div>
+                <table class="pricing-table-input">
+                    <thead>
+                        <tr>
+                            <th>Bundle</th>
+                            <th>Base Price</th>
+                            <th>Your Selling Price (GHS)</th>
+                            <th>Est. Profit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1 GB (No Expiry)</td>
+                            <td>10.00</td>
+                            <td>
+                                <div class="price-input-group">
+                                    <span>GHS</span>
+                                    <input type="number" value="11.50" min="10.00" step="0.50" onchange="calculateProfit(this, 10)">
+                                </div>
+                            </td>
+                            <td><span class="profit-badge">+1.50</span></td>
+                        </tr>
+                        <tr>
+                            <td>10 GB (No Expiry)</td>
+                            <td>100.00</td>
+                            <td>
+                                <div class="price-input-group">
+                                    <span>GHS</span>
+                                    <input type="number" value="108.00" min="100.00" step="1.00" onchange="calculateProfit(this, 100)">
+                                </div>
+                            </td>
+                            <td><span class="profit-badge">+8.00</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <button class="btn-register" onclick="alert('Prices saved successfully! Your referral link is updated.')">Save All Changes</button>
+            <div style="height: 50px;"></div>
+        </div>
+
+        <!-- VIEW: AGENT REGISTRATION -->
+        <div id="agent-registration-view" class="view-section">
+            <div class="reg-container">
+                <div class="fee-card">
+                    <p>Agent Registration Fee</p>
+                    <h2>GH₵ 50.00</h2>
+                    <p><small>One-time payment for lifetime access</small></p>
+                </div>
+
+                <form id="agent-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="fname">First Name</label>
+                            <input type="text" id="fname" placeholder="Enter first name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="lname">Last Name</label>
+                            <input type="text" id="lname" placeholder="Enter last name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" placeholder="024xxxxxxx" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" placeholder="agent@example.com" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="location">Location / Region</label>
+                            <select id="location">
+                                <option value="">Select Region</option>
+                                <option value="greater-accra">Greater Accra</option>
+                                <option value="ashanti">Ashanti</option>
+                                <option value="western">Western</option>
+                                <option value="central">Central</option>
+                                <option value="eastern">Eastern</option>
+                                <option value="northern">Northern</option>
+                                <option value="volta">Volta</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Select Payment Method</label>
+                        <div class="payment-methods">
+                            <div class="pay-option selected" onclick="selectPayment(this)">
+                                <i class="fas fa-mobile-alt"></i> MTN MoMo
+                            </div>
+                            <div class="pay-option" onclick="selectPayment(this)">
+                                <i class="fas fa-mobile-alt"></i> Telecel Cash
+                            </div>
+                            <div class="pay-option" onclick="selectPayment(this)">
+                                <i class="fas fa-mobile-alt"></i> AT Money
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width" style="margin-top: 30px;">
+                        <button type="submit" class="btn-register">Pay GH₵ 50.00 & Register Agent</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- VIEW: DEALER REGISTRATION -->
+        <div id="dealer-registration-view" class="view-section">
+            <div class="reg-container">
+                <div class="fee-card dealer-bg">
+                    <p>Dealer Registration Fee</p>
+                    <h2>GH₵ 100.00</h2>
+                    <p><small>Premium access for authorized dealers</small></p>
+                </div>
+
+                <form id="dealer-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="d-fname">First Name</label>
+                            <input type="text" id="d-fname" placeholder="Enter first name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="d-lname">Last Name</label>
+                            <input type="text" id="d-lname" placeholder="Enter last name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="d-phone">Phone Number</label>
+                            <input type="tel" id="d-phone" placeholder="024xxxxxxx" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="d-email">Email Address</label>
+                            <input type="email" id="d-email" placeholder="dealer@example.com" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="d-location">Location / Region</label>
+                            <select id="d-location">
+                                <option value="">Select Region</option>
+                                <option value="greater-accra">Greater Accra</option>
+                                <option value="ashanti">Ashanti</option>
+                                <option value="western">Western</option>
+                                <option value="central">Central</option>
+                                <option value="eastern">Eastern</option>
+                                <option value="northern">Northern</option>
+                                <option value="volta">Volta</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Select Payment Method</label>
+                        <div class="payment-methods">
+                            <div class="pay-option selected" onclick="selectPayment(this)">
+                                <i class="fas fa-mobile-alt"></i> MTN MoMo
+                            </div>
+                            <div class="pay-option" onclick="selectPayment(this)">
+                                <i class="fas fa-mobile-alt"></i> Telecel Cash
+                            </div>
+                            <div class="pay-option" onclick="selectPayment(this)">
+                                <i class="fas fa-mobile-alt"></i> AT Money
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width" style="margin-top: 30px;">
+                        <button type="submit" class="btn-register">Pay GH₵ 100.00 & Register Dealer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- NEW VIEW: AFA REGISTRATION -->
+        <div id="afa-registration-view" class="view-section">
+            <div class="reg-container">
+                <div class="fee-card afa-bg">
+                    <p>AFA Registration</p>
+                    <h2>GH₵ 12.00</h2>
+                    <p><small>Secure your registration today</small></p>
+                </div>
+
+                <form id="afa-form">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="afa-fullname">Full Name</label>
+                            <input type="text" id="afa-fullname" placeholder="Enter full name (as on ID)" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="afa-id">Ghana Card Number</label>
+                            <input type="text" id="afa-id" placeholder="GHA-xxxxxxxx-x" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="afa-contact">Contact Number</label>
+                            <input type="tel" id="afa-contact" placeholder="024xxxxxxx" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="afa-location">Location / Region</label>
+                            <select id="afa-location" required>
+                                <option value="">Select Region</option>
+                                <option value="greater-accra">Greater Accra</option>
+                                <option value="ashanti">Ashanti</option>
+                                <option value="western">Western</option>
+                                <option value="central">Central</option>
+                                <option value="eastern">Eastern</option>
+                                <option value="northern">Northern</option>
+                                <option value="volta">Volta</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Select Payment Method</label>
+                        <div class="payment-methods">
+                            <div class="pay-option selected" onclick="selectPayment(this)">
+                                <i class="fas fa-mobile-alt"></i> MTN MoMo
+                            </div>
+                            <div class="pay-option" onclick="selectPayment(this)">
+                                <i class="fas fa-mobile-alt"></i> Telecel Cash
+                            </div>
+                            <div class="pay-option" onclick="selectPayment(this)">
+                                <i class="fas fa-mobile-alt"></i> AT Money
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width" style="margin-top: 30px;">
+                        <button type="submit" class="btn-register">Pay GH₵ 12.00 & Register AFA</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /* --- JAVASCRIPT CODE --- */
+        document.addEventListener('DOMContentLoaded', () => {
+            const body = document.body;
+            const toggleBtn = document.getElementById('toggle-btn');
+            const overlay = document.getElementById('sidebar-overlay');
+            const navItems = document.querySelectorAll('.nav-item');
+            const pageTitle = document.getElementById('page-title');
+            
+            // --- LOGIN LOGIC START ---
+            const loginForm = document.getElementById('login-form');
+            const loginOverlay = document.getElementById('login-overlay');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            const loginError = document.getElementById('login-error');
+
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const user = document.getElementById('username').value.trim();
+                const pass = document.getElementById('password').value.trim();
+
+                // Simple check for demo purposes
+                if(user === 'admin' && pass === 'password12') {
+                    // Success: Hide login, Show App
+                    loginOverlay.style.display = 'none';
+                    sidebar.style.display = 'flex';
+                    mainContent.style.display = 'block';
+                    
+                    // Trigger initial chart animation
+                    loadChart();
+                } else {
+                    // Failure
+                    loginError.style.display = 'block';
+                    
+                    // Shake animation effect
+                    const card = document.querySelector('.login-card');
+                    card.style.transform = 'translateX(10px)';
+                    setTimeout(() => { card.style.transform = 'translateX(-10px)'; }, 100);
+                    setTimeout(() => { card.style.transform = 'translateX(10px)'; }, 200);
+                    setTimeout(() => { card.style.transform = 'translateX(0)'; }, 300);
+                }
+            });
+            // --- LOGIN LOGIC END ---
+
+            // --- Navigation Logic ---
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    const targetId = item.getAttribute('data-target');
+                    if(targetId) {
+                        e.preventDefault();
+                        
+                        // Update Active Link
+                        navItems.forEach(nav => nav.classList.remove('active'));
+                        item.classList.add('active');
+
+                        // Hide all views
+                        document.querySelectorAll('.view-section').forEach(view => {
+                            view.classList.remove('active-view');
+                        });
+
+                        // Show target view
+                        const targetView = document.getElementById(targetId + '-view');
+                        if(targetView) {
+                            targetView.classList.add('active-view');
+                            
+                            // Update Title
+                            if(targetId === 'dashboard') pageTitle.textContent = 'Dashboard Overview';
+                            if(targetId === 'data-plans') pageTitle.textContent = 'Network Data Plans';
+                            if(targetId === 'agent-registration') pageTitle.textContent = 'Register New Agent';
+                            if(targetId === 'dealer-registration') pageTitle.textContent = 'Register New Dealer';
+                            if(targetId === 'referral-settings') pageTitle.textContent = 'Referral & Pricing';
+                            if(targetId === 'afa-registration') pageTitle.textContent = 'AFA Registration';
+                        }
+                        
+                        // On mobile, close sidebar after click
+                        if (window.innerWidth <= 768) {
+                            body.classList.add('mobile-hidden');
+                        }
+                    }
+                });
+            });
+
+            // --- Sidebar Toggle Logic ---
+            toggleBtn.addEventListener('click', () => {
+                if (window.innerWidth > 768) {
+                    body.classList.toggle('collapsed-sidebar');
+                } else {
+                    body.classList.toggle('mobile-hidden');
+                }
+            });
+
+            overlay.addEventListener('click', () => {
+                body.classList.add('mobile-hidden');
+            });
+
+            if (window.innerWidth <= 768) {
+                body.classList.add('mobile-hidden');
+            }
+
+            // --- Chart Animation ---
+            function loadChart() {
+                const chartData = [
+                    { day: 'Mon', value: 45 },
+                    { day: 'Tue', value: 60 },
+                    { day: 'Wed', value: 35 },
+                    { day: 'Thu', value: 80 },
+                    { day: 'Fri', value: 95 },
+                    { day: 'Sat', value: 50 },
+                    { day: 'Sun', value: 70 }
+                ];
+
+                const chartContainer = document.querySelector('.simple-bar-chart');
+                
+                if(chartContainer) {
+                    chartContainer.innerHTML = '';
+                    chartData.forEach(item => {
+                        const group = document.createElement('div');
+                        group.className = 'bar-group';
+                        const bar = document.createElement('div');
+                        bar.className = 'bar';
+                        bar.setAttribute('data-value', item.value + ' Sales');
+                        const label = document.createElement('div');
+                        label.className = 'bar-label';
+                        label.textContent = item.day;
+                        group.appendChild(bar);
+                        group.appendChild(label);
+                        chartContainer.appendChild(group);
+                        setTimeout(() => { bar.style.height = item.value + '%'; }, 100);
+                    });
+                }
+            }
+            
+            // --- Payment Selection Logic ---
+            window.selectPayment = function(element) {
+                const parent = element.closest('.payment-methods');
+                parent.querySelectorAll('.pay-option').forEach(el => el.classList.remove('selected'));
+                element.classList.add('selected');
+            };
+
+            // Form Submit Alerts (Mock)
+            if(document.getElementById('agent-form')) {
+                document.getElementById('agent-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    alert('Redirecting to payment gateway for GH₵ 50.00...');
+                });
+            }
+            if(document.getElementById('dealer-form')) {
+                document.getElementById('dealer-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    alert('Redirecting to payment gateway for GH₵ 100.00...');
+                });
+            }
+            // AFA Form Submit
+            if(document.getElementById('afa-form')) {
+                document.getElementById('afa-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    alert('Redirecting to payment gateway for GH₵ 12.00 (AFA Registration)...');
+                });
+            }
+
+            // --- Referral Functions ---
+            window.copyLink = function() {
+                const copyText = document.getElementById("referral-link");
+                copyText.select();
+                copyText.setSelectionRange(0, 99999); 
+                navigator.clipboard.writeText(copyText.value);
+                
+                const btn = document.querySelector('.btn-copy');
+                const originalText = btn.textContent;
+                btn.textContent = "Copied!";
+                setTimeout(() => { btn.textContent = originalText; }, 2000);
+            }
+
+            window.calculateProfit = function(inputElement, basePrice) {
+                const sellingPrice = parseFloat(inputElement.value);
+                const row = inputElement.closest('tr');
+                const badge = row.querySelector('.profit-badge');
+                
+                if (!isNaN(sellingPrice)) {
+                    const profit = sellingPrice - basePrice;
+                    if (profit >= 0) {
+                        badge.textContent = "+" + profit.toFixed(2);
+                        badge.style.backgroundColor = "#dcfce7";
+                        badge.style.color = "#16a34a";
+                    } else {
+                        badge.textContent = profit.toFixed(2);
+                        badge.style.backgroundColor = "#fee2e2";
+                        badge.style.color = "#ef4444";
+                    }
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
